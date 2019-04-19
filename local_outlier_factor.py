@@ -65,7 +65,7 @@ class Local_Outlier_Factor():
         np.savez(cache_path+fname,k_distance=distance)
 
     #Function to get the k-neighbourhood
-    def calculate_k_neighbourhood(self,cache_path="cache/"):
+    def calculate_k_neighbourhood(self,cache_path="cache/",epsilon=1e-5):
         '''
         This function will calculate the k-neighbourhood of the points
         according to their k-distance calculated.
@@ -73,11 +73,11 @@ class Local_Outlier_Factor():
         #Finding the k-neighbour of all the points
         print("\nFinding the k-neighborhood")
         indices,distance=self.ball_tree.query_radius(self.points,
-                                                r=self.k_distance,
+                                                r=self.k_distance+epsilon,
                                                 return_distance=True)
         #Printing the result
         print("shape of neighbor: ",(distance).shape)
-        # print("shape of neighbour"(indices).shape)
+        # print("shape of neighbour",(indices))
         #Assining the neighbors to the class attributes
         self.k_nbr_dist=distance
         self.k_nbr_indx=indices
@@ -109,6 +109,12 @@ class Local_Outlier_Factor():
             #Now adding rest of the rechablity distances
             reach_distance=np.maximum(nbr_dist,k_dist[nbr_indx])
             reach_distance=np.sum(reach_distance)-k_dist[pidx]
+            if(reach_distance<1e-10):
+                print(pidx)
+                print(nbr_dist)
+                print(k_dist[nbr_indx])
+                print(nbr_indx)
+                print(k_dist[pidx],"\n")
 
             #Now calculating the local_rechability density
             lrd=float(num_nbr)/reach_distance
@@ -165,8 +171,8 @@ class Local_Outlier_Factor():
         #Printing the confusion matrix
         print("\nPrinting the confusion matrix:")
         print("\tPredict:1\tPredict:0")
-        print("label:1\t{}\t{}".format(true_pos,false_neg))
-        print("label:0\t{}\t{}\n".format(false_pos,true_neg))
+        print("label:1\t{}\t\t{}".format(true_pos,false_neg))
+        print("label:0\t{}\t\t{}\n".format(false_pos,true_neg))
         print("Precision: ",float(true_pos)/float(true_pos+false_pos))
         print("Recall: ",float(true_pos)/float(true_pos+false_neg))
 
@@ -177,7 +183,7 @@ if __name__=="__main__":
     points,labels=get_points_and_labels(datapath)
 
     #Creating the LOF object
-    my_lof=Local_Outlier_Factor(k_value=6,points=points,labels=labels)
+    my_lof=Local_Outlier_Factor(k_value=15,points=points,labels=labels)
     my_lof.calculate_kth_distance()
     my_lof.calculate_k_neighbourhood()
     my_lof.calculate_local_rechability_density()
