@@ -18,8 +18,8 @@ def get_points_and_labels(datapath):
     print("Printing labels sample")
     print(labels.head())
     #Getting the dataframe as numpy array
-    labels=labels.values[0:20000]
-    points=points.values[0:20000]
+    labels=labels.values[0:10]
+    points=points.values[0:10]
     print("shape of points: ",points.shape)
     print("shape of labels: ",labels.shape)
 

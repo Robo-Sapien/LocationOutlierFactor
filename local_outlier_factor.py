@@ -50,10 +50,17 @@ class Local_Outlier_Factor():
         This function will find the kth nearest distance from the point
         by querying the
         '''
-        print("\nFinding k-distance from each of the points")
+        print("\n\n################################################")
+        print("Finding k-distance from each of the points")
         # distance,_=self.kdTree.query(self.points,k=[self.k_value+1])
-        distance,_=self.ball_tree.query(self.points,
-                                        k=self.k_value,
+        try:
+            print("Loading the k-distance array from cache!")
+            fname="{}_distance.npz".format(self.k_value)
+            distance=np.load(cache_path+fname)["k_distance"]
+        except:
+            print("Load Unsuccessful.Finding the k-distance!")
+            distance,_=self.ball_tree.query(self.points,
+                                        k=self.k_value+1,
                                         return_distance=True,
                                         dualtree=True)
         print("shape of distance matrix:",distance.shape)
@@ -71,13 +78,24 @@ class Local_Outlier_Factor():
         according to their k-distance calculated.
         '''
         #Finding the k-neighbour of all the points
-        print("\nFinding the k-neighborhood")
-        indices,distance=self.ball_tree.query_radius(self.points,
+        print("\n###############################################")
+        print("Finding the k-neighborhood")
+        #Loading from the cache if necessary
+        try:
+            print("Loading the Neighbor-Info from cache!")
+            fname="{}_neighbors.npz".format(self.k_value)
+            load_neigh=np.load(cache_path+fname)
+            indices=load_neigh["k_nbr_indx"]
+            distance=load_neigh["k_nbr_dist"]
+        except:
+            print("Load Unsuccesful.Calculating the Neighbors")
+            #If not present in cache then loading from memory
+            indices,distance=self.ball_tree.query_radius(self.points,
                                                 r=self.k_distance+epsilon,
                                                 return_distance=True)
         #Printing the result
-        print("shape of neighbor: ",(distance).shape)
-        # print("shape of neighbour",(indices))
+        print("shape of neighbor: ",distance.shape)
+        # print("shape of neighbour:\n",indices)
         #Assining the neighbors to the class attributes
         self.k_nbr_dist=distance
         self.k_nbr_indx=indices
@@ -95,7 +113,8 @@ class Local_Outlier_Factor():
         '''
         #Initializing the prediciton array
         all_lrd=[]
-        print("\nCalculating the Local-Rchability-Distance of points")
+        print("\n#####################################################")
+        print("Calculating the Local-Rechability-Density of points")
         #Now iterating ove all the points
         for pidx in range(self.points.shape[0]):
             #Calculating the number of neighbours for particular point
@@ -107,6 +126,11 @@ class Local_Outlier_Factor():
             nbr_dist=self.k_nbr_dist[pidx]
             k_dist=self.k_distance
             #Now adding rest of the rechablity distances
+            # print(nbr_indx)
+            # print(nbr_dist)
+            # print(k_dist[nbr_indx])
+            # print(np.maximum(nbr_dist,k_dist[nbr_indx]))
+            # print(k_dist[pidx],"\n")
             reach_distance=np.maximum(nbr_dist,k_dist[nbr_indx])
             reach_distance=np.sum(reach_distance)-k_dist[pidx]
             if(reach_distance<1e-10):
@@ -137,7 +161,8 @@ class Local_Outlier_Factor():
         true_neg=0      #actually neg and predicted neg
 
         #Iterating over all the points
-        print("\nCalculating the Local-Outlier-Factor")
+        print("\n\n##########################################")
+        print("Calculating the Local-Outlier-Factor")
         for pidx in range(self.points.shape[0]):
             #Getting the actual labels
             actual_label=self.labels[pidx]
@@ -183,7 +208,7 @@ if __name__=="__main__":
     points,labels=get_points_and_labels(datapath)
 
     #Creating the LOF object
-    my_lof=Local_Outlier_Factor(k_value=15,points=points,labels=labels)
+    my_lof=Local_Outlier_Factor(k_value=3,points=points,labels=labels)
     my_lof.calculate_kth_distance()
     my_lof.calculate_k_neighbourhood()
     my_lof.calculate_local_rechability_density()
