@@ -115,6 +115,7 @@ class Local_Outlier_Factor():
         all_lrd=[]
         print("\n#####################################################")
         print("Calculating the Local-Rechability-Density of points")
+        sim_points=0
         #Now iterating ove all the points
         for pidx in range(self.points.shape[0]):
             #Calculating the number of neighbours for particular point
@@ -134,17 +135,22 @@ class Local_Outlier_Factor():
             reach_distance=np.maximum(nbr_dist,k_dist[nbr_indx])
             reach_distance=np.sum(reach_distance)-k_dist[pidx]
             if(reach_distance<1e-10):
-                print(pidx)
-                print(nbr_dist)
-                print(k_dist[nbr_indx])
-                print(nbr_indx)
-                print(k_dist[pidx],"\n")
-
-            #Now calculating the local_rechability density
-            lrd=float(num_nbr)/reach_distance
+                sim_points+=1
+                # print(pidx)
+                # print(nbr_dist)
+                # print(k_dist[nbr_indx])
+                # print(nbr_indx)
+                # print(k_dist[pidx],"\n")
+                #Giving them default value of 1 if multiple similar points
+                lrd=1
+            else:
+                #Now calculating the local_rechability density
+                lrd=float(num_nbr)/reach_distance
             #Appending the lrd to all lrd array
             all_lrd.append(lrd)
 
+        #Total Number of similar points
+        print("Number of similar points:",sim_points)
         #Now assigning this lrd array to the class
         self.all_lrd=np.array(all_lrd)
 
@@ -181,7 +187,7 @@ class Local_Outlier_Factor():
             #Now calculating the lof
             lof=avg_nbr_lrd/self_lrd
             #Making the prediciton as outlier if lof>1
-            prediction=int(lof>1)
+            prediction=int(lof>1.001)
 
             #Counting the confusion element 1: pos and 0:neg
             if(prediction==1 and actual_label==1):
@@ -208,7 +214,7 @@ if __name__=="__main__":
     points,labels=get_points_and_labels(datapath)
 
     #Creating the LOF object
-    my_lof=Local_Outlier_Factor(k_value=3,points=points,labels=labels)
+    my_lof=Local_Outlier_Factor(k_value=10,points=points,labels=labels)
     my_lof.calculate_kth_distance()
     my_lof.calculate_k_neighbourhood()
     my_lof.calculate_local_rechability_density()

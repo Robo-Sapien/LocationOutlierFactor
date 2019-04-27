@@ -18,10 +18,13 @@ def get_points_and_labels(datapath):
     print("Printing labels sample")
     print(labels.head())
     #Getting the dataframe as numpy array
-    labels=labels.values[0:10]
-    points=points.values[0:10]
+    total_points=10000
+    labels=labels.values[0:total_points]
+    points=points.values[0:total_points]
     print("shape of points: ",points.shape)
     print("shape of labels: ",labels.shape)
+    print(points[3624]==points[3635])
+    # print()
 
     #Now mean normalizing the numpy arrays
     points=(points-np.mean(points,axis=0))/np.std(points,axis=0)
