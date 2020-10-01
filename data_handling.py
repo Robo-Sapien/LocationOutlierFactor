@@ -28,6 +28,9 @@ def get_points_and_labels(datapath):
 
     #Now mean normalizing the numpy arrays
     points=(points-np.mean(points,axis=0))/np.std(points,axis=0)
+    
+    #min-max normalization
+    points_normalized = (points - points.min(axis = 0))/(points.max(axis = 0) - points.min(axis = 0))
 
     return points,labels
 
